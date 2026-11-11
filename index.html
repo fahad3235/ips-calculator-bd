@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IPS Calculator BD</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">&#9889;</span>
+    <span id="brandName">IPS Calculator BD</span>
+  </div>
+  <button id="langBtn" type="button" aria-label="Switch language">&#2476;&#2494;&#2434;&#2482;&#2494;</button>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1 id="appTitle">IPS &amp; Battery Backup Sizer</h1>
+    <p id="appSubtitle" class="subtitle">Size the right IPS, battery and inverter for your home in Bangladesh.</p>
+  </section>
+
+  <section class="card" id="loadCard" aria-labelledby="secLoad">
+    <h2 id="secLoad">1. Your appliances</h2>
+    <p class="muted" id="secLoadDesc">Add the appliances you want to run on backup power.</p>
+
+    <div class="row">
+      <label class="grow" for="presetSel"><span data-i18n="presetLabel">Preset appliance</span>
+        <select id="presetSel"></select>
+      </label>
+      <button id="addPresetBtn" type="button" class="btn primary" data-i18n="addPresetBtn">Add</button>
+    </div>
+
+    <div class="row wrap-row">
+      <input id="customName" type="text" maxlength="60" data-i18n-ph="customNamePh" placeholder="Appliance name (e.g. Table fan)" aria-label="Custom appliance name">
+      <input id="customWatts" type="number" min="1" max="5000" step="1" inputmode="numeric" data-i18n-ph="customWattsPh" placeholder="Watts" aria-label="Watts">
+      <input id="customQty" type="number" min="1" max="20" step="1" value="1" inputmode="numeric" aria-label="Quantity">
+      <button id="addCustomBtn" type="button" class="btn" data-i18n="addCustomBtn">Add custom</button>
+    </div>
+    <p class="err" id="customErr" role="alert" hidden></p>
+
+    <p class="hint" id="wattsNote">Preset watts are typical values &mdash; check your appliance label.</p>
+
+    <ul id="appList" class="app-list"></ul>
+    <p class="empty" id="emptyLoad">No appliances yet. Add one above to start sizing your IPS.</p>
+
+    <div class="total-row">
+      <span data-i18n="totalLoad">Total load</span>
+      <strong id="totalWatts">0 W</strong>
+    </div>
+  </section>
+
+  <section class="card" id="sizeCard" aria-labelledby="secSize">
+    <h2 id="secSize">2. Backup sizing</h2>
+    <div class="grid2">
+      <label for="hoursInput"><span data-i18n="hoursLabel">Backup hours</span>
+        <input id="hoursInput" type="number" min="0.5" max="24" step="0.5" value="4" inputmode="decimal">
+      </label>
+      <label for="voltageSel"><span data-i18n="voltageLabel">System voltage</span>
+        <select id="voltageSel">
+          <option value="12">12 V</option>
+          <option value="24">24 V</option>
+        </select>
+      </label>
+      <label for="battTypeSel"><span data-i18n="battTypeLabel">Battery type</span>
+        <select id="battTypeSel">
+          <option value="lead" data-i18n="leadAcid">Lead-acid (50% usable)</option>
+          <option value="lithium" data-i18n="lithium">Lithium (80% usable)</option>
+        </select>
+      </label>
+      <label for="effInput"><span data-i18n="effLabel">Inverter efficiency (%)</span>
+        <input id="effInput" type="number" min="70" max="95" step="1" value="85" inputmode="numeric">
+      </label>
+    </div>
+    <p class="err" id="sizeErr" role="alert" hidden></p>
+
+    <div class="results">
+      <div class="result"><span class="r-label" data-i18n="energyLabel">Energy needed</span><strong id="energyWh">&mdash;</strong></div>
+      <div class="result"><span class="r-label" data-i18n="batteryLabel">Battery required</span><strong id="batteryAh">&mdash;</strong></div>
+      <div class="result"><span class="r-label" data-i18n="inverterLabel">Inverter size</span><strong id="inverterVA">&mdash;</strong></div>
+    </div>
+
+    <details class="explainer" id="explainerBox">
+      <summary data-i18n="explainerTitle">How this is calculated</summary>
+      <p id="explainerText" class="mono"></p>
+    </details>
+  </section>
+
+  <section class="card" id="runtimeCard" aria-labelledby="secRuntime">
+    <h2 id="secRuntime">3. Runtime estimator</h2>
+    <p class="muted" id="secRuntimeDesc">How long will a battery last with your current load?</p>
+    <div class="grid2">
+      <label for="rtAh"><span data-i18n="runtimeAhLabel">Battery capacity (Ah)</span>
+        <input id="rtAh" type="number" min="1" max="10000" step="1" value="200" inputmode="numeric">
+      </label>
+      <label for="rtVolt"><span data-i18n="runtimeVoltLabel">Battery voltage (V)</span>
+        <select id="rtVolt">
+          <option value="12">12 V</option>
+          <option value="24">24 V</option>
+        </select>
+      </label>
+    </div>
+    <p class="err" id="rtErr" role="alert" hidden></p>
+    <div class="results">
+      <div class="result"><span class="r-label" data-i18n="runtimeResult">Estimated runtime</span><strong id="runtimeOut">&mdash;</strong></div>
+    </div>
+  </section>
+
+  <section class="card" id="costCard" aria-labelledby="secCost">
+    <h2 id="secCost">4. Cost estimator</h2>
+    <div class="grid2">
+      <label for="priceAh"><span data-i18n="priceAhLabel">Battery price per Ah (BDT)</span>
+        <input id="priceAh" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 250">
+      </label>
+      <label for="priceVa"><span data-i18n="priceVaLabel">Inverter price per VA (BDT)</span>
+        <input id="priceVa" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 12">
+      </label>
+    </div>
+    <p class="hint" id="costHint">Enter local market prices to see an estimated total cost.</p>
+    <p class="err" id="costErr" role="alert" hidden></p>
+    <div class="results" id="costResults" hidden>
+      <div class="result"><span class="r-label" data-i18n="costBattery">Battery cost</span><strong id="costBattOut">&mdash;</strong></div>
+      <div class="result"><span class="r-label" data-i18n="costInverter">Inverter cost</span><strong id="costInvOut">&mdash;</strong></div>
+      <div class="result"><span class="r-label" data-i18n="costTotal">Estimated total cost</span><strong id="costTotalOut">&mdash;</strong></div>
+    </div>
+  </section>
+
+  <section class="card" id="quickCard" aria-labelledby="secQuick">
+    <h2 id="secQuick">Quick setups</h2>
+    <div class="quick-grid">
+      <button type="button" class="btn quick" data-quick="basic">
+        <strong data-i18n="quickBasic">Basic home</strong>
+        <span class="q-desc" id="quickBasicDesc">2 fans + 3 LED bulbs + router &middot; 4 h</span>
+      </button>
+      <button type="button" class="btn quick" data-quick="office">
+        <strong data-i18n="quickOffice">Home office</strong>
+        <span class="q-desc" id="quickOfficeDesc">Laptop + router + 2 lights + fan &middot; 6 h</span>
+      </button>
+      <button type="button" class="btn quick" data-quick="full">
+        <strong data-i18n="quickFull">Full home</strong>
+        <span class="q-desc" id="quickFullDesc">4 fans + 6 lights + TV + fridge + router + pump &middot; 3 h</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="card" id="savedCard" aria-labelledby="secSaved">
+    <h2 id="secSaved">Saved setups</h2>
+    <div class="row">
+      <input id="saveName" type="text" maxlength="60" class="grow" data-i18n-ph="saveNamePh" placeholder="Setup name" aria-label="Setup name">
+      <button id="saveBtn" type="button" class="btn primary" data-i18n="saveBtn">Save current setup</button>
+    </div>
+    <p class="err" id="saveErr" role="alert" hidden></p>
+    <ul id="savedList" class="saved-list"></ul>
+    <p class="empty" id="emptySaved">No saved setups yet.</p>
+    <div class="row data-row">
+      <button id="exportBtn" type="button" class="btn" data-i18n="exportBtn">Export JSON</button>
+      <button id="importBtn" type="button" class="btn" data-i18n="importBtn">Import JSON</button>
+      <input id="importFile" type="file" accept=".json,application/json" hidden>
+    </div>
+    <p class="msg" id="dataMsg" role="status" hidden></p>
+    <details class="danger">
+      <summary data-i18n="eraseBtn">Erase all saved setups</summary>
+      <div class="row">
+        <input id="eraseConfirm" type="text" class="grow" data-i18n-ph="eraseConfirmPh" placeholder="Type DELETE to confirm" autocomplete="off">
+        <button id="eraseBtn" type="button" class="btn danger-btn" data-i18n="eraseConfirmBtn">Erase everything</button>
+      </div>
+      <p class="err" id="eraseErr" role="alert" hidden></p>
+    </details>
+  </section>
+
+  <footer class="foot">
+    <p id="footerNote">Typical wattages are estimates. Prices are entered by you. This tool is not a substitute for an electrician&rsquo;s advice.</p>
+  </footer>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
